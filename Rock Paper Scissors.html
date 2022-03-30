@@ -1,0 +1,228 @@
+<!Doctype html>
+<html>
+    <head>
+        <style>
+            input [type="checkbox"]{
+                width: 1rem; height: 1rem;
+                border-radius: 50%;
+                transition: box-shadow .3s;
+                background: lightgrey;
+                cursor: pointer;
+                border: 0;
+                appearance: none; -webkit-appearance: none; 
+            }
+
+            input:checked{ box-shadow: inset 0 0 0 20px blue; } 
+            button {
+                margin-top: 25px;
+                border-radius: 5px;
+            }
+            #paper {
+                margin-left: 2px;
+            }
+            #rock {
+                margin-left: calc(50% - 180px);
+            }
+            #scissors {
+                margin-left: 2px;
+            }
+            #comp, #player {
+                margin-left: calc(50% - 62.5px);
+            }
+            #past {
+                background-color: whitesmoke;
+            }
+            table, th, td {
+                border: 1px solid black;
+                border-radius: 5px;
+                text-align: center;
+                width:max-content;
+                margin: 0 auto;
+            }
+            thead, tbody { display: block; width: fit-content;}
+
+            tbody {
+                overflow-y: scroll;    /* Trigger vertical scroll    */
+                overflow-x: hidden;  /* Hide the horizontal scroll */
+                scrollbar-width: 3px;
+            }
+            .footer {
+                position: fixed;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                background-color: red;
+                color: white;
+                text-align: center;
+            }
+
+            .pre-data {
+                background-color: lightgrey;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <title>Rock Paper Scissors</title>
+    </head>
+    <body>
+        <div style="width: 30%; float:left;">
+            <table id="past" width="100%">
+                <p style="text-align: center;">Show Pictures:<input id="checkbox" type="checkbox"></p>
+                <tr class="pre-data"><td>Player</td><td>Computer</td><td>Result</td></tr>
+                <tr class="pre-data"><td id="wins">Wins: </td><td id="draws">Draws: </td><td id="losses">Losses: </td></tr>
+            </table>
+        </div>
+        <div style="width: 70%; float: right; ">
+            <div style="width: 50%; float: left; min-width: 400px">
+                <h2 style="text-align: center;">Computer:</h2>
+                <img id="comp" width="125px" height="125px">
+                <h2 style="text-align: center; margin-top: 10px;">You:</h2>
+                <img id="player" width="125px" height="125px">
+                <h2 id="result" style="text-align: center;">Result: </h2>
+                <button id="rock" class="button" onclick="player = 'rock'"><img src="RPS/rock.png" width="100px" height="100px"></button>
+                <button id="paper" class="button" onclick="player = 'paper'"><img src="RPS/paper.png" width="100px" height="100px"></button>
+                <button id="scissors" class="button" onclick="player = 'scissors'"><img src="RPS/scissors.png" width="100px" height="100px"></button>
+            </div>
+        </div>
+    </body>
+    <script>
+        $(document).ready(function () {
+            var tHeight = $(window.top).height();
+            $("tbody").css('height', (tHeight * .67));
+        });
+        // Adjust the width of thead cells when *window* resizes
+        $(window).resize(function() {
+            // Change the selector if needed
+            var $table = $('table'),
+                $bodyCells = $table.find('tbody tr:first').children(),
+                colWidth;
+
+            // Get the tbody columns width array
+            colWidth = $bodyCells.map(function() {
+                return $(this).width();
+            }).get();
+
+            // Set the width of thead columns
+            $table.find('thead tr').children().each(function(i, v) {
+                $(v).width(colWidth[i]);
+            });    
+        }).resize(); // Trigger the resize handler once the script runs
+    </script>
+    <script>
+        var choices = ["rock", "paper", "scissors"];
+        var comp, player;
+        var result;
+        var pastRounds = [];
+        var round = 0;
+        var pastGuessTable = document.getElementById("past");
+        var wins = 0, losses = 0, draws = 0;
+
+        $('#checkbox').on('click', function(){
+            var tableShowPictures = $('#checkbox').prop('checked');
+            var temp;
+            var row = pastGuessTable.insertRow($(pastGuessTable).find('tr').length - 1);
+            var cell = row.insertCell();
+            var cell2 = row.insertCell();
+            var cell3 = row.insertCell();
+            if(!tableShowPictures)
+            {   
+                if ($(pastGuessTable).find("tr").length > 0)
+                {
+                    $("#past").find('tr').slice(1,-1).remove();
+                    for (var i = 0; i < pastRounds.length; i++)
+                    {
+                        row = pastGuessTable.insertRow($(pastGuessTable).find('tr').length - 1);
+                        cell = row.insertCell();
+                        cell2 = row.insertCell();
+                        cell3 = row.insertCell();
+                        temp = pastRounds[i].split(" ");
+                        cell.innerHTML = temp[0];
+                        cell2.innerHTML = temp[1];
+                        cell3.innerHTML = temp[2];
+                    }
+                }
+            }
+            else {
+                if ($(pastGuessTable).find("tr").length > 0)
+                {
+                    $("#past").find('tr').slice(1,-1).remove();
+                    for (var i = 0; i < pastRounds.length; i++)
+                    {
+                        row = pastGuessTable.insertRow($(pastGuessTable).find('tr').length - 1);
+                        cell = row.insertCell();
+                        cell2 = row.insertCell();
+                        cell3 = row.insertCell();
+                        temp = pastRounds[i].split(" ");
+                        cell.innerHTML = "<img src='RPS/" + temp[0] + ".png' width='62.5px' height='62.5px'>";
+                        cell2.innerHTML = "<img src='RPS/" + temp[1] + ".png' width='62.5px' height='62.5px'>";
+                        cell3.innerHTML = temp[2];
+                    }
+                }
+            }
+        });
+        function writeToTable()
+        {
+            $("#wins").text("Wins: " + wins);
+            $("#draws").text("Draws: " + draws);
+            $("#losses").text("Losses: " + losses);
+            var tableShowPictures = $('#checkbox').prop('checked');
+            var temp = pastRounds[round].split(" ");
+            var row = pastGuessTable.insertRow($(pastGuessTable).find('tr').length - 1);
+            var cell = row.insertCell();
+            var cell2 = row.insertCell();
+            var cell3 = row.insertCell();
+            
+            if(!tableShowPictures)
+            {   
+                cell.innerHTML = temp[0];
+                cell2.innerHTML = temp[1];
+                cell3.innerHTML = temp[2];
+            } else {
+                cell.innerHTML = "<img src='RPS/" + temp[0] + ".png' width='62.5px' height='62.5px'>";
+                cell2.innerHTML = "<img src='RPS/" + temp[1] + ".png' width='62.5px' height='62.5px'>";
+                cell3.innerHTML = temp[2];
+            }
+        }
+
+        window.onload
+        {
+            comp = choices[Math.floor(Math.random() * choices.length)];
+            $("#comp").attr('src', "RPS/" + comp + ".png");
+            player = choices[Math.floor(Math.random() * choices.length)];
+            $("#player").attr('src', "RPS/" + player + ".png");
+        }
+
+        $('.button').on('click', function (){
+            comp = choices[Math.floor(Math.random() * choices.length)];
+            $("#comp").attr('src', "RPS/" + comp + ".png");
+            $("#player").attr('src', "RPS/" + player + ".png");
+            var lose = player == "rock" && comp == "paper" || player == "paper" && comp == "scissors" || player == "scissors" && comp == "rock";
+            if (player == comp) 
+            {
+                $("#result").text("Result: Draw");
+                result = "Draw";
+                draws++;
+            }
+            else if (lose) 
+            {
+                $("#result").text("Result: Loss");
+                result = "Loss";
+                losses++;
+            }
+            else
+            {
+                $("#result").text("Result: Win");
+                result = "Win";
+                wins++;
+            }
+            pastRounds.push(player + " " + comp + " " + result);
+            writeToTable();
+            round++;
+        });
+    </script>
+    <div class="footer" style="background-color: darkgrey;">
+        <p id="copyright"></p>
+    </div>
+    <script>
+        $("#copyright").text("© " + new Date().getFullYear() + " Seth Pinto. All rights reserved.");
+    </script>
+</html>

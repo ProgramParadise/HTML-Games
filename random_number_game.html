@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <style>
+            #submit {
+                border-radius: 5px;
+                background:-webkit-linear-gradient(cyan, lightGreen);
+                font-size: large;
+            }
+            table, th, td {
+                border: 1px solid black;
+                border-radius: 5px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <input type="number" id="input">
+        <button id="submit"><b>Submit</b></button>
+        <p id="output">This is where the output should go</p>
+        <table id="past" width="50%">
+            <tr><td>Number</td><td>Guesses</td></tr>
+        </table>
+        <script>
+            var finish = false;
+            var input = $("#input");
+            var numGuesses = 0;
+            var maxGuesses = 10;
+            var numGuessesTotal = 0;
+            var guess;
+            var pastGuesses = new Array();
+            var pastGuessTable = document.getElementById("past");
+            var correct = false;
+            var ready = false, changeParam = false;
+            var min, max;
+            var trueNumber;
+            var numClicks = 0;
+
+            var setup = function()
+            {
+                do 
+                {
+                    min = parseInt(prompt("Min: "));
+                    max = parseInt(prompt("Max: "));
+                } while (!Number.isInteger(min) || !Number.isInteger(max))
+                ready = true;
+                changeParam = false;
+            }
+
+            function guesswork (guess)
+            {
+                if (!correct)
+                {
+                    if (numGuesses < maxGuesses)
+                    {
+                        numGuesses++;
+                        if (trueNumber == guess)
+                        {
+                            correct = true;
+                            var temp = numGuesses + " guesses!";
+                            numGuessesTotal += numGuesses;
+                            pastGuesses.push(guess);
+                            finish = prompt("Do you want to exit? (y/n)").trim().toLowerCase() == "y";
+                            $("#output").text("You guessed right in " + temp);
+                            if (!finish)
+                            {
+                                temp += " Guess a new number.";
+                                play();
+                            }
+                        }
+                        else
+                        {                            
+                            var temp = ""
+                            if (guess < trueNumber)
+                                temp = "Your number is less than the real number. ";
+                            else temp = "Your number is higher than the real number. ";
+                            $("#output").text(temp + "You have " + (maxGuesses - numGuesses) + " guesses remaining.");
+                            pastGuesses.push(guess);
+                            play();
+                        }
+                    } 
+                    else
+                    {
+                        $("#output").text("You have no more guesses");
+                        numGuessesTotal += numGuesses;
+                        finish = prompt("Do you want to exit? (y/n)").trim().toLowerCase() == "y";
+                        reset();
+                    }
+                }
+            }
+
+            function writeToTable()
+            {
+                var temp = "[";
+                var row = pastGuessTable.insertRow();
+                var cell = row.insertCell();
+                var cell2 = row.insertCell();
+
+                for (var n = numGuessesTotal - numGuesses; n <= numGuessesTotal; n++)
+                {
+                    if (n == numGuessesTotal - numGuesses)
+                        cell.innerHTML = "" + trueNumber;
+                    else if (n < numGuessesTotal)
+                    {
+                        temp += "" + pastGuesses[n - 1] + ", ";
+                    }
+                    else
+                    {
+                        temp += "" + pastGuesses[n - 1] + "]";
+                        cell2.innerHTML = temp;
+                    }
+                }
+            }
+
+            var play = function()
+            {
+                if (!ready || changeParam)
+                {
+                    setup();
+                }
+                if (correct)
+                {
+                    writeToTable();
+                    if (!finish)
+                    {
+                        changeParam = prompt("Do you want to change the min/max values? (y/n)").trim().toLowerCase() == "y";
+                        reset();
+                    }
+                    else quit();
+                }
+                if (!correct && !finish)
+                {
+                    console.log("numguesses = " + numGuesses);
+                    if (!correct && (numGuesses < maxGuesses))
+                    {
+                        if (numGuesses == 0)
+                        {
+                            trueNumber = Math.floor((Math.random() * ((max + 1) - min)) + min);
+                            console.log(trueNumber);
+                        }
+
+                        $("#input").unbind('keydown').on('keydown', function(e)
+                        {
+                            if(e.which == 13)
+                            {
+                                guess = input.val();
+                                if (Number.isInteger(parseInt(guess)))
+                                {
+                                    guesswork(guess);
+                                }
+                            }
+                        });
+
+                        $("#submit").unbind('click').on('click', function()
+                        {
+                            guess = input.val();
+                            if (Number.isInteger(parseInt(guess)))
+                            {
+                                guesswork(guess);
+                            }
+                            numClicks++;
+                        });
+                        console.log("numClicks:" + numClicks);
+                    }
+                }
+            }
+
+            var reset = function()
+            {
+                document.getElementById("input").value = "";
+                numGuesses = 0;
+                correct = false;
+                play();
+            }
+
+            play();
+
+            var quit = function()
+            {
+                $("#output").text("Thanks for playing!");
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,130 @@
+<!Doctype html>
+<html lang="en">
+    <head>
+        <style>
+            #replay {
+                width: auto;
+                height: 1.5rem;
+            }
+            button {
+                border-radius: 5px;
+                width: 10rem;
+                height: 10rem;
+                background-color: white;
+                transition: all 0.5s ease;
+            }
+            .middle {
+                margin-left: 2px;
+            }
+            .left {
+                margin-left: calc(50% - (15rem + 2px));
+            }
+            .right {
+                margin-left: 2px;
+            }
+            .results {
+                width: 100%;
+                height: fit-content;
+                text-align: center;
+            }
+            .game {
+                width: 100%;
+                min-width: 515px;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <title>Tic Tac Toe</title>
+    </head>
+    <body>
+        <div class="game">
+            <button id="topLeft" class="button left" onclick="buttonClicked = 'topLeft'; loc = 0"></button>
+            <button id="topMiddle" class="button middle" onclick="buttonClicked = 'topMiddle'; loc = 1"></button>
+            <button id="topRight" class="button right" onclick="buttonClicked = 'topRight'; loc = 2"></button>
+            <button id="left" class="button left" onclick="buttonClicked = 'left'; loc = 3"></button>
+            <button id="middle" class="button middle" onclick="buttonClicked = 'middle'; loc = 4"></button>
+            <button id="right" class="button right" onclick="buttonClicked = 'right'; loc = 5"></button>
+            <button id="bottomLeft" class="button left" onclick="buttonClicked = 'bottomLeft'; loc = 6"></button>
+            <button id="bottomMiddle" class="button middle" onclick="buttonClicked = 'bottomMiddle'; loc = 7"></button>
+            <button id="bottomRight" class="button right" onclick="buttonClicked = 'bottomRight'; loc = 8"></button>
+            <div class="results">
+                <h1 id="result"></h1>
+                <button id="replay" onclick="replay();">Play Again</button>
+            </div>
+        </div>
+    </body>
+    <script>
+        $("#replay").hide();
+        const matchString = (str, matcher) => [...matcher].every(n => str.includes(n));
+        
+        var sortString = function(text) {
+            text = text.replace(undefined, "");
+            var strArr = text.split('');
+            var numArr = [];
+            strArr.forEach(element => {
+                numArr.push("" + parseInt(element));
+            });
+            console.log(numArr);
+            return numArr.sort((a,b) => a - b).join('');
+        };
+
+        var click = 0;
+        var buttonClicked, loc;
+        var player1;
+        var player2;
+        var result;
+        var win = ["012", "345", "678", "036", "147", "258", "048", "246"];
+        var player1Color = "red";
+        var player2Color = "blue";
+
+        var setup = function ()
+        {
+            $("#result").text("");
+            click = 0;
+            $('.button').prop('disabled', false);
+            $('.button').css('background', 'white');
+            result = "";
+            player1 = "";
+            player2 = "";
+            $("#replay").hide();
+        }
+
+        $('.button').on('click', function(){
+            click++;
+            console.log(click);
+            $('#' + buttonClicked).prop('disabled', true);
+            if (click % 2 == 0)
+            {
+                $('#' + buttonClicked).css('background', player2Color);
+                player2 += "" + loc;
+            }
+            else
+            {
+                $('#' + buttonClicked).css('background', player1Color);
+                player1 += "" + loc;
+            }
+            if (player1.length >= 3 || player2.length >= 3)
+            {
+                if (win.some(w => matchString(player1, w))) //problem child
+                {
+                    $('.button').prop('disabled', true);
+                    $("#result").text("Player 1 Wins!");
+                    result = "win";
+                    $("#replay").show();
+                }
+                else if (win.some(w => matchString(player2, w))) //problem child pt 2
+                {
+                    $('.button').prop('disabled', true);
+                    $("#result").text("Player 2 Wins!");
+                    result = "win";
+                    $("#replay").show();
+                }
+                else if (click == 9) { $("#result").text("Draw"); result = "win"; $("#replay").show();}
+            }
+        });
+
+        var replay = function()
+        {
+            setup();
+        }
+    </script>
+</html>
