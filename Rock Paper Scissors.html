@@ -59,6 +59,11 @@
             .pre-data {
                 background-color: lightgrey;
             }
+
+            .resetOnChangeDiv {
+                text-align: center;
+                padding-top: 1rem;
+            }
         </style>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <title>Rock Paper Scissors</title>
@@ -81,6 +86,7 @@
                 <button id="rock" class="button" onclick="player = 'rock'"><img src="RPS/rock.png" width="100px" height="100px"></button>
                 <button id="paper" class="button" onclick="player = 'paper'"><img src="RPS/paper.png" width="100px" height="100px"></button>
                 <button id="scissors" class="button" onclick="player = 'scissors'"><img src="RPS/scissors.png" width="100px" height="100px"></button>
+                <div class="resetOnChangeDiv"><input type="checkbox" class="resetOnChange" name="reset"><label for="reset">Reset Computer Choices on Player Input Change</label></div>
             </div>
         </div>
     </body>
@@ -108,12 +114,13 @@
         }).resize(); // Trigger the resize handler once the script runs
     </script>
     <script>
-        var choices = ["rock", "paper", "scissors"];
+        var playerChoices = ["rock", "paper", "scissors"], compChoices = ["rock", "paper", "scissors"];
         var comp, player;
         var result;
-        var pastRounds = [];
+        var pastRounds = [], pastRoundsUser = [];
         var round = 0;
         var pastGuessTable = document.getElementById("past");
+        var rock = 0, paper = 0, scissors = 0;
         var wins = 0, losses = 0, draws = 0;
 
         $('#checkbox').on('click', function(){
@@ -185,17 +192,37 @@
 
         window.onload
         {
-            comp = choices[Math.floor(Math.random() * choices.length)];
+            comp = compChoices[Math.floor(Math.random() * compChoices.length)];
             $("#comp").attr('src', "RPS/" + comp + ".png");
-            player = choices[Math.floor(Math.random() * choices.length)];
+            player = playerChoices[Math.floor(Math.random() * playerChoices.length)];
             $("#player").attr('src', "RPS/" + player + ".png");
         }
 
         $('.button').on('click', function (){
-            comp = choices[Math.floor(Math.random() * choices.length)];
+            comp = compChoices[Math.floor(Math.random() * compChoices.length)];
             $("#comp").attr('src', "RPS/" + comp + ".png");
             $("#player").attr('src', "RPS/" + player + ".png");
             var lose = player == "rock" && comp == "paper" || player == "paper" && comp == "scissors" || player == "scissors" && comp == "rock";
+            if (round > 3 && (pastRoundsUser[round - 3] == pastRoundsUser[round - 2]) && (pastRoundsUser[round - 2] == pastRoundsUser[round - 1]))
+            {
+                console.log("hello");
+                if (player == "rock")
+                {
+                    rock++;
+                    compChoices.push("paper");
+                }
+                else if (player == "paper")
+                {
+                    paper++;
+                    compChoices.push("scissors");
+                }
+                else
+                {
+                    scissors++;
+                    compChoices.push("rock");
+                }
+            } else if ($('.resetOnChange').is(':checked')) compChoices = ["rock", "paper", "scissors"];
+
             if (player == comp) 
             {
                 $("#result").text("Result: Draw");
@@ -214,7 +241,9 @@
                 result = "Win";
                 wins++;
             }
+            
             pastRounds.push(player + " " + comp + " " + result);
+            pastRoundsUser.push("" + player);
             writeToTable();
             round++;
         });
